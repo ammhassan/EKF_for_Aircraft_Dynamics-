@@ -1,0 +1,83 @@
+\documentclass{article}
+
+\usepackage{hyperref}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsfonts}
+\usepackage{amstext}
+
+\title{\textbf{Extended Kalman Filter for Fixed-Wing Aircraft Dynamics}}
+\author{\textbf{Ahmed M. Hassan}\thanks{am.hassan89@gmail.com}}
+
+\begin{document}
+
+\maketitle
+
+\section{Introduction}
+The goal of this project is to implement an extended Kalman filter (EKF) to estimate
+a fixed-wing aicraft state vector from noisy sensor measurments. 
+The first iteration of this project will be focused only on the longitudinal dynamics.
+   
+\section{Aircraft Model}
+The nonlinear longitudinal dynamics for conventional fixed-wing aircraft can be written as follows \cite{Nelson, Stevens-Lewis}
+\begin{equation}\label{Eq:Nonlinear_sys}
+    \begin{split}
+        \dot{U} &= Q w - g \sin{\theta} + \frac{X}{m}\\
+        \dot{W} &= Q U + g \cos{\theta} + \frac{Z}{m}\\
+        \dot{Q} &= \frac{M}{I_{yy}}\\
+        \dot{\theta} &= Q
+    \end{split}
+\end{equation}
+The forces and moments can be broken down as follows
+\begin{equation}
+    \begin{split}
+        X &= q S \biggl(C_{X_0} + \frac{\bar{c}}{2 V_T} C_{X_Q} Q + C_{X_{\delta_e}} \delta_e\biggr) +
+        X_{t_0} + X_{\delta_t} \delta_t\\
+        Z &= q S \biggl(C_{Z_0} + \frac{\bar{c}}{2 V_T} C_{Z_Q} Q + C_{Z_{\delta_e}} \delta_e\biggr)\\
+        M &= q S \bar{c} \biggl(C_{M_0} + \frac{\bar{c}}{2 V_T} C_{M_Q} Q + C_{M_{\delta_e}} \delta_e \biggr)
+    \end{split}
+\end{equation}
+
+The nonlinear system \ref{Eq:Nonlinear_sys} can be linearized and
+written in a standard linear system form as follows \cite{Nelson, Stevens-Lewis}
+\begin{equation} \label{Eq:Linearized_sys}
+    \begin{bmatrix}
+    \dot{U} \\
+    \dot{W} \\
+    \dot{Q} \\
+    \dot{\theta} \\ 	
+    \end{bmatrix}
+    =
+    \begin{bmatrix}
+    X_u & X_w & 0 & -g \cos{\theta_0}\\
+    Z_u & Z_w & U_0 & -g \sin{\theta_0}\\
+    M_u & M_w & M_q & -g M_w \sin{\theta_0}\\
+    0 & 0 & 1 & 0 \\
+    \end{bmatrix}
+    \begin{bmatrix}
+    U \\
+    W \\
+    Q \\
+    \theta \\ 	
+    \end{bmatrix}
+    +
+    \begin{bmatrix}
+    X_{\delta_e} & X_{\delta_t} \\
+    Z_{\delta_e} & 0 \\
+    M_{\delta_e} & M_{\delta_t} \\
+    0 & 0\\ 	
+    \end{bmatrix}
+    \begin{bmatrix}
+    {\delta_e} \\
+    {\delta_t}  	
+    \end{bmatrix}
+    \end{equation}
+
+\section{Extended Kalman Filter Equations}
+
+\section{Algorithm Structure}
+
+\section*{References}
+\bibliographystyle{plain}
+\bibliography{ref}
+\end{document}
