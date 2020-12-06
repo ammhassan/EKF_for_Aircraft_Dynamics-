@@ -22,7 +22,7 @@ The first iteration of this project will be focused only on the longitudinal dyn
 The nonlinear longitudinal dynamics for conventional fixed-wing aircraft can be written as follows \cite{Nelson, Stevens-Lewis}
 \begin{equation}\label{Eq:Nonlinear_sys}
     \begin{split}
-        \dot{U} &= Q w - g \sin{\theta} + \frac{X}{m}\\
+        \dot{U} &= -Q W - g \sin{\theta} + \frac{X}{m}\\
         \dot{W} &= Q U + g \cos{\theta} + \frac{Z}{m}\\
         \dot{Q} &= \frac{M}{I_{yy}}\\
         \dot{\theta} &= Q
@@ -31,10 +31,22 @@ The nonlinear longitudinal dynamics for conventional fixed-wing aircraft can be 
 The forces and moments can be broken down as follows
 \begin{equation}
     \begin{split}
-        X &= q S \biggl(C_{X_0} + \frac{\bar{c}}{2 V_T} C_{X_Q} Q + C_{X_{\delta_e}} \delta_e\biggr) +
+        X &= q S \biggl(C_X(\alpha) + \frac{\bar{c}}{2 V_T} C_{X_Q} Q + C_{X_{\delta_e}} \delta_e\biggr) +
         X_{t_0} + X_{\delta_t} \delta_t\\
-        Z &= q S \biggl(C_{Z_0} + \frac{\bar{c}}{2 V_T} C_{Z_Q} Q + C_{Z_{\delta_e}} \delta_e\biggr)\\
-        M &= q S \bar{c} \biggl(C_{M_0} + \frac{\bar{c}}{2 V_T} C_{M_Q} Q + C_{M_{\delta_e}} \delta_e \biggr)
+        Z &= q S \biggl(C_Z(\alpha) + \frac{\bar{c}}{2 V_T} C_{Z_Q} Q + C_{Z_{\delta_e}} \delta_e\biggr)\\
+        M &= q S \bar{c} \biggl(C_M(\alpha) + \frac{\bar{c}}{2 V_T} C_{M_Q} Q + C_{M_{\delta_e}} \delta_e \biggr)
+    \end{split}
+\end{equation}
+Considering a trim condition in a cruise level flight, the nonlinear system \ref{Eq:Nonlinear_sys} 
+can be further simplified to be on the following from
+%This nonlinear model is very simple and has only very few nonlinear terms-need to have a more sophisticated model later
+\begin{equation}\label{Eq:Nonlinear_sys_cruise}
+    \begin{split}
+        \dot{U} &= -Q W - g \cos{\theta_0} \Delta \theta+ X_U \Delta U + X_W \Delta W +
+                 X_{\delta_e} \delta_e + X_{\delta_t} \delta_t\\
+        \dot{W} &= Q U - g \sin{\theta_0} \Delta \theta + Z_U \Delta U + Z_W \Delta W + Z_{\delta_e} \delta_e\\
+        \dot{Q} &= M_U \Delta U + M_W \Delta W + M_Q \Delta Q + M_{\delta_e} \delta_e + M_{\delta_t} \delta_t\\
+        \dot{\theta} &= Q
     \end{split}
 \end{equation}
 
@@ -51,7 +63,7 @@ written in a standard linear system form as follows \cite{Nelson, Stevens-Lewis}
     \begin{bmatrix}
     X_u & X_w & 0 & -g \cos{\theta_0}\\
     Z_u & Z_w & U_0 & -g \sin{\theta_0}\\
-    M_u & M_w & M_q & -g M_w \sin{\theta_0}\\
+    M_u & M_w & M_q & 0\\
     0 & 0 & 1 & 0 \\
     \end{bmatrix}
     \begin{bmatrix}
@@ -71,7 +83,29 @@ written in a standard linear system form as follows \cite{Nelson, Stevens-Lewis}
     {\delta_e} \\
     {\delta_t}  	
     \end{bmatrix}
-    \end{equation}
+\end{equation}
+
+In this project we will consider the longitudinal model of the aircraft "DELTA" given in \cite[PP. 561--563]{Mclean}
+whose parameters are given as follows (at $U_0 = 75~ m/s$ and $\theta_0 = 2.7 ^\circ$)
+\begin{equation}\label{Eq:DELTA_Params}
+    \begin{split}
+        m &= 300000 kg\\
+        X_U &= -0.02\\
+        X_W &= 0.1\\
+        Z_U &= -0.23\\
+        Z_W &= -0.634\\
+        M_U &= -2.55*10^{-5}\\
+        M_W &= -0.005\\
+        M_Q &= -0.61\\
+        X_{\delta_e} &= 0.14\\
+        Z_{\delta_e} &= -2.9\\
+        M_{\delta_e} &= -0.64\\
+        X_{\delta_t} &= 1.56\\
+        M_{\delta_t} &= 0.0054\\
+    \end{split}
+\end{equation}
+where $\delta_t$ is considered to be from the trim thrust. 
+As such, $\delta_t$ is allowed the between $1$ and $-0.56$ \cite{Hassan2016_JAST}.  
 
 \section{Extended Kalman Filter Equations}
 
