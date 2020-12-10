@@ -10,5 +10,5 @@ project(EKF_test)
 set(EIGEN_INC_DIR /usr/include/eigen-3.2.10/)
 include_directories(${EIGEN_INC_DIR})
 
-set(SOURCE_FILES src/main.cpp src/helperFunc.cpp)
+set(SOURCE_FILES src/main.cpp src/helper_func.cpp)
 add_executable(EKF_test ${SOURCE_FILES})

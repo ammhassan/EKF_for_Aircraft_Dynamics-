@@ -1,7 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <boost/numeric/odeint.hpp>
-#include "helperFunc.h"
+#include "helper_func.h"
 #include "LongDynamics.h"
 
 int main()
