@@ -1,9 +1,8 @@
 # Extended Kalman Filter for Aircraft Dynamics
 
 The goal of this project is to implement an extended Kalman filter (EKF) to estimate
-a fixed-wing aicraft state vector from noisy sensor measurments. 
+a fixed-wing aicraft state vector from noisy sensor measurments.
 The first iteration of this project will be focused only on the longitudinal dynamics.
-
 
 ## Dependencies for Running Locally
 * cmake >= 3.7
@@ -18,5 +17,5 @@ The first iteration of this project will be focused only on the longitudinal dyn
   * Windows: recommend using [MinGW](http://www.mingw.org/)
 * Eigen >= 3.2.10
   * All OSes: [click here for installation instructions](http://eigen.tuxfamily.org/dox/GettingStarted.html)
-
-
+* odeint >= 2.2
+  * All OSes: [click here for installation instructions](http://headmyshoulder.github.io/odeint-v2/doc/index.html)
