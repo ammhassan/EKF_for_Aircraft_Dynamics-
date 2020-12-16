@@ -3,13 +3,14 @@
 #include <boost/numeric/odeint.hpp>
 #include "helper_func.h"
 #include "LongDynamics.h"
+#include "EKF.h"
 
 int main()
 {
-    // define the dataset path
+    // Define the dataset path
     const std::string dataSetPath{"../data/aircraft_long_dynamics_dataset.txt"};
 
-    // load data set
+    // Load data set
     int dataSetSize = 1001;
     Eigen::VectorXd elevInput(dataSetSize);
     Eigen::VectorXd throttleInput(dataSetSize);
@@ -20,21 +21,45 @@ int main()
     loadDataSet(dataSetPath, elevInput, throttleInput, alphaTrue, 
                 alphaMeasured, pitchRateTrue, pitchRateMeasured);
     
-    // Print some dataset variables to check that they have been parsed properly
-    std::cout << "elevInput at index 0: " << elevInput(0) << std::endl;
-    std::cout << "elevInput at index 1: " << elevInput(1) << std::endl;
-    std::cout << "elevInput at index 1000: " << elevInput(1000) << std::endl;
-    std::cout << "pitchRateMeasured at index 0: " << pitchRateMeasured(0) << std::endl;
-    std::cout << "pitchRateMeasured at index 1: " << pitchRateMeasured(1) << std::endl;
-    std::cout << "pitchRateMeasured at index 1000: " << pitchRateMeasured(1000) << std::endl;
+    // Define dynamic system parameters
+    int num_state = 4;
+    int num_input = 2;
+    int num_output = 2;
+    const double sample_time = 0.01;
+    Eigen::MatrixXd Q(num_state, num_state); // Process noise covariance matrix
+    Q << 0.0001, 0.0   , 0.0     , 0.0,
+         0.0   , 0.0001, 0.0     , 0.0,
+         0.0   , 0.0   , 0.000001, 0.0,
+         0.0   , 0.0   , 0.0     , 0.0;
+
+    Eigen::MatrixXd R(num_output, num_output); // Measurment noise covariance matrix
+    R << 0.00001, 0.0,
+         0.0    , 0.00001;
+
+    Eigen::MatrixXd P0(num_state, num_state); // Initial estimate error covariance matrix
+    P0 << 0.0001, 0.0   , 0.0     , 0.0,
+         0.0   , 0.0001, 0.0     , 0.0,
+         0.0   , 0.0   , 0.000001, 0.0,
+         0.0   , 0.0   , 0.0     , 0.0;
+
+    // Construct EKF object
+    EKF ekf(Q, R, P0, sample_time);
+
+    // Initialize the filter
+    Eigen::VectorXd x0(num_state);
+    x0 << 74.9167,
+          3.5330,
+          0.0,
+          2.7 * PI / 180;
+    ekf.Init(x0);
 
 
-    // State_initialization
-    state_type x(4);
+    // State_initialization for the integrator
+    state_type x(num_state);
     x[0] = 74.9167;
     x[1] = 3.5330;
     x[2] = 0.0;
-    x[4] = 2.7 * PI / 180;
+    x[3] = 2.7 * PI / 180;
 
     // Integration_class
     LongDynamics eomObject;
@@ -42,23 +67,42 @@ int main()
     // Define_const_stepper
     boost::numeric::odeint::runge_kutta4<state_type> stepper;
 
-    // Print intial state
-    std::cout << "U at t0: " << x[0] << std::endl;
-    std::cout << "W at t0: " << x[1] << std::endl;
-    std::cout << "Q at t0: " << x[2] << std::endl;
-    std::cout << "theta at t0: " << x[3] << std::endl;
+    // Define vectors to hold the estimated outputs and the integrator state
+    Eigen::VectorXd alpha_estimated(dataSetSize);
+    Eigen::VectorXd pitch_rate_estimated(dataSetSize);
+    Eigen::VectorXd predicted_state(num_state);
+    
+    // Run the filter on the data set of I/O
+    Eigen::VectorXd y(num_output);
+    Eigen::VectorXd u(num_input);
+    double t = 0.0;
+    std::cout << "Processing dataset..." << std::endl;
 
-    // Integrate_const_loop
-    const double dt = 0.01;
-    for(double t = 0.0 ; t < 10.0 ; t += dt)
+    for (int i = 0; i < dataSetSize; i++)
     {
-        stepper.do_step(eomObject, x, t, dt);
+        // Run the integrator for one step and get the new state
+        t = sample_time * i;
+        stepper.do_step(eomObject, x, t, sample_time);
+        predicted_state(0) = x[0];
+        predicted_state(1) = x[1];
+        predicted_state(2) = x[2];
+        predicted_state(3) = x[3];
+
+        // Run EKF for one step
+        y << alphaMeasured(i),
+             pitchRateMeasured(i);
+
+        u << elevInput(i),
+             throttleInput(i);
+
+        ekf.Update(y, u, predicted_state);
+        alpha_estimated(i) = ekf.GetEstimatedOutput()(0);
+        pitch_rate_estimated(i) = ekf.GetEstimatedOutput()(1);
     }
 
-    // Print final state
-    std::cout << "U at tf: " << x[0] << std::endl;
-    std::cout << "W at tf: " << x[1] << std::endl;
-    std::cout << "Q at tf: " << x[2] << std::endl;
-    std::cout << "theta at tf: " << x[3] << std::endl;
-
+    std::cout << "Finished" << std::endl;
+    
+    // Print final estimated outputs
+    std::cout << "alpha at tf: " << alpha_estimated(dataSetSize-1) << std::endl;
+    std::cout << "pitch rate at tf: " << pitch_rate_estimated(dataSetSize-1) << std::endl;
 }
