@@ -49,7 +49,7 @@ class EKF
     Eigen::MatrixXd I_; // identity matrix
 
     // State estimate at the current time step
-    Eigen::Vector4d x_hat_;
+    Eigen::VectorXd x_hat_;
 };
 
 #endif

@@ -56,9 +56,9 @@ int main()
 
     // State_initialization for the integrator
     state_type x(num_state);
-    x[0] = 74.9167;
-    x[1] = 3.5330;
-    x[2] = 0.0;
+    x[0] = 74.9167 + 0.03;
+    x[1] = 3.5330 + 0.03;
+    x[2] = 0.0 + 0.001;
     x[3] = 2.7 * PI / 180;
 
     // Integration_class
@@ -90,13 +90,17 @@ int main()
         // Run EKF for one step
         y << alphaMeasured(i),
              pitchRateMeasured(i);
-
         u << elevInput(i),
              throttleInput(i);
-
         ekf.Update(y, u, predicted_state);
         alpha_estimated(i) = ekf.GetEstimatedOutput()(0);
         pitch_rate_estimated(i) = ekf.GetEstimatedOutput()(1);
+
+        // Pass the updated state back to the integrator
+        x[0] = ekf.GetState()(0);
+        x[1] = ekf.GetState()(1);
+        x[2] = ekf.GetState()(2);
+        x[3] = ekf.GetState()(3);
     }
     std::cout << "Finished processing dataset" << std::endl;
 
