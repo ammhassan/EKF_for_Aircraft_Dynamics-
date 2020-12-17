@@ -45,33 +45,29 @@ int main()
     // Construct EKF object
     EKF ekf(Q, R, P0, sample_time);
 
-    // Initialize the filter
+    // Initial state for the filter
     Eigen::VectorXd x0(num_state);
-    x0 << 74.9167,
-          3.5330,
-          0.0,
+    x0 << 74.9167 + 0.03,
+          3.5330 + 0.03,
+          0.0 +0.001,
           2.7 * PI / 180;
-    ekf.Init(x0);
 
-
-    // State_initialization for the integrator
+    // Define integration class and a stepper integrator
     state_type x(num_state);
-    x[0] = 74.9167 + 0.03;
-    x[1] = 3.5330 + 0.03;
-    x[2] = 0.0 + 0.001;
-    x[3] = 2.7 * PI / 180;
-
-    // Integration_class
     LongDynamics eomObject;
+    boost::numeric::odeint::runge_kutta4<state_type> rk4_stepper;
 
-    // Define_const_stepper
-    boost::numeric::odeint::runge_kutta4<state_type> stepper;
-
-    // Define vectors to hold the estimated outputs and the integrator state
+    // Define vectors to hold the estimated outputs and the integrator predicted state
     Eigen::VectorXd alpha_estimated(dataSetSize);
     Eigen::VectorXd pitch_rate_estimated(dataSetSize);
     Eigen::VectorXd predicted_state(num_state);
-    
+
+    // Initialize the state
+    predicted_state << 74.9167 + 0.03,
+                       3.5330 + 0.03,
+                       0.0 +0.001,
+                       2.7 * PI / 180;
+
     // Run the filter on the data set of I/O
     Eigen::VectorXd y(num_output);
     Eigen::VectorXd u(num_input);
@@ -79,14 +75,6 @@ int main()
     std::cout << "Processing dataset..." << std::endl;
     for (int i = 0; i < dataSetSize; i++)
     {
-        // Run the integrator for one step and get the new state
-        t = sample_time * i;
-        stepper.do_step(eomObject, x, t, sample_time);
-        predicted_state(0) = x[0];
-        predicted_state(1) = x[1];
-        predicted_state(2) = x[2];
-        predicted_state(3) = x[3];
-
         // Run EKF for one step
         y << alphaMeasured(i),
              pitchRateMeasured(i);
@@ -101,6 +89,14 @@ int main()
         x[1] = ekf.GetState()(1);
         x[2] = ekf.GetState()(2);
         x[3] = ekf.GetState()(3);
+        
+        // Run the integrator for one step and get the new state
+        t = sample_time * i;
+        rk4_stepper.do_step(eomObject, x, t, sample_time);
+        predicted_state(0) = x[0];
+        predicted_state(1) = x[1];
+        predicted_state(2) = x[2];
+        predicted_state(3) = x[3];       
     }
     std::cout << "Finished processing dataset" << std::endl;
 

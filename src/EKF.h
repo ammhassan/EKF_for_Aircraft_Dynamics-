@@ -11,9 +11,6 @@ class EKF
     EKF(const Eigen::MatrixXd &Q, const Eigen::MatrixXd &R,
         const Eigen::MatrixXd &P0, const double dt);
 
-    // Filter initializer
-    void Init(const Eigen::VectorXd &x0);
-
     // Linearized system evaluation
     void EvaluateLinearizedSys();
 
@@ -32,7 +29,6 @@ class EKF
     const int num_output_ = 2;
 
     // Time and sampleTime
-    double time_; //TODO: remove time if it's not going to be used
     double sample_time_;
 
     // Dynamic system matrices

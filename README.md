@@ -25,7 +25,6 @@ Full documentation is available in `doc/EKF_for_Aircraft_Dynamics.pdf`.
 The expected output from this program looks like this: <br />
 `Dataset has been loaded` <br />
 `EKF object has been constructed` <br />
-`EKF object has been initialized` <br />
 `Processing dataset...` <br />
 `Finished processing dataset` <br />
 `RMSE for the estimated AoA is: 0.000735383` <br />

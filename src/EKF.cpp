@@ -22,17 +22,11 @@ EKF::EKF(const Eigen::MatrixXd &Q, const Eigen::MatrixXd &R,
     C_ << 0, 1 / param.U0, 0, 0,
           0, 0           , 1, 0;
 
-    I_.setIdentity(num_state_, num_state_);    
+    I_.setIdentity(num_state_, num_state_);
+
+    P_ = P0_;
     
     std::cout << "EKF object has been constructed" << std::endl;
-}
-
-void EKF::Init(const Eigen::VectorXd &x0)
-{
-    x_hat_ = x0;
-    P_ = P0_;
-    time_ = 0.0;
-    std::cout << "EKF object has been initialized" << std::endl;
 }
 
 void EKF::EvaluateLinearizedSys()
@@ -49,16 +43,13 @@ void EKF::Update(const Eigen::VectorXd &y, const Eigen::VectorXd &u, const Eigen
     x_hat_ = x;
     EKF::EvaluateLinearizedSys();
 
-    // Predict the estimate error covariance matrix
-    P_ = A_ * P_ * A_.transpose() + Q_;
-
-    // Correction step
+    // Update step
     K_ = P_ * C_.transpose() * (C_ * P_ * C_.transpose() + R_).inverse();
     x_hat_ += K_ * (y - C_ * x_hat_);
     P_ =  (I_ - K_ * C_) * P_;
 
-    // Prepare for next time step
-    time_ += sample_time_;
+    // Propagate the estimate error covariance matrix
+    P_ = A_ * P_ * A_.transpose() + Q_;
 }
 
 Eigen::VectorXd EKF::GetState()
@@ -69,9 +60,4 @@ Eigen::VectorXd EKF::GetState()
 Eigen::VectorXd EKF::GetEstimatedOutput()
 {
     return C_ * x_hat_;
-}
-
-double EKF::GetTime()
-{
-    return time_;
 }
