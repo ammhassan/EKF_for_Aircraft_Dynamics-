@@ -1,8 +1,9 @@
 #include "helper_func.h"
 #include <fstream>
 #include <iostream>
+#include <math.h>
 
-// This function loads a dataset I/O from a text file.
+// This function loads a dataset of I/O from a text file.
 void loadDataSet(std::string path, Eigen::VectorXd &elevInput, Eigen::VectorXd &throttleInput,
                  Eigen::VectorXd &alphaTrue, Eigen::VectorXd &alphaMeasured, 
                  Eigen::VectorXd &pitchRateTrue, Eigen::VectorXd &pitchRateMeasured) 
@@ -34,6 +35,19 @@ void loadDataSet(std::string path, Eigen::VectorXd &elevInput, Eigen::VectorXd &
         }
       }
     }
-    std::cout << "Dataset has been loaded." << std::endl;
+    std::cout << "Dataset has been loaded" << std::endl;
   }
 } // void loadDataSet
+
+
+// This function computes the root mean square error between the true output and the estimated one.
+float computeRMSE(Eigen::VectorXd &trueOutput, Eigen::VectorXd &estimatedOutput)
+{
+    float meanSquareError = 0.0;
+    for (int i = 0; i < trueOutput.size(); ++i)
+    {
+        double error = trueOutput(i) - estimatedOutput(i);
+        meanSquareError += error * error / trueOutput.size();
+    }
+return sqrt(meanSquareError);
+}

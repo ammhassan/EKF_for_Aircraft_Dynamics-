@@ -24,7 +24,7 @@ EKF::EKF(const Eigen::MatrixXd &Q, const Eigen::MatrixXd &R,
 
     I_.setIdentity(num_state_, num_state_);    
     
-    std::cout << "EKF object has been constructed." << std::endl;
+    std::cout << "EKF object has been constructed" << std::endl;
 }
 
 void EKF::Init(const Eigen::VectorXd &x0)
@@ -32,7 +32,7 @@ void EKF::Init(const Eigen::VectorXd &x0)
     x_hat_ = x0;
     P_ = P0_;
     time_ = 0.0;
-    std::cout << "EKF object has been initialized." << std::endl;
+    std::cout << "EKF object has been initialized" << std::endl;
 }
 
 void EKF::EvaluateLinearizedSys()

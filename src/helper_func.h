@@ -5,6 +5,8 @@
 
 void loadDataSet(std::string path, Eigen::VectorXd &elevInput, Eigen::VectorXd &throttleInput,
                  Eigen::VectorXd &alphaTrue, Eigen::VectorXd &alphaMeasured, 
-                 Eigen::VectorXd &pitchRateTrue, Eigen::VectorXd &pitchRateMeasured);                 
+                 Eigen::VectorXd &pitchRateTrue, Eigen::VectorXd &pitchRateMeasured);
+
+float computeRMSE(Eigen::VectorXd &trueOutput, Eigen::VectorXd &estimatedOutput);       
 
 #endif

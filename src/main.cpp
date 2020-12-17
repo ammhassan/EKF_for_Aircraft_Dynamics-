@@ -77,7 +77,6 @@ int main()
     Eigen::VectorXd u(num_input);
     double t = 0.0;
     std::cout << "Processing dataset..." << std::endl;
-
     for (int i = 0; i < dataSetSize; i++)
     {
         // Run the integrator for one step and get the new state
@@ -99,10 +98,9 @@ int main()
         alpha_estimated(i) = ekf.GetEstimatedOutput()(0);
         pitch_rate_estimated(i) = ekf.GetEstimatedOutput()(1);
     }
+    std::cout << "Finished processing dataset" << std::endl;
 
-    std::cout << "Finished" << std::endl;
-    
-    // Print final estimated outputs
-    std::cout << "alpha at tf: " << alpha_estimated(dataSetSize-1) << std::endl;
-    std::cout << "pitch rate at tf: " << pitch_rate_estimated(dataSetSize-1) << std::endl;
+    // Compute and print root mean square error for the estimated outputs (angle of attack and pitch rate)
+    std::cout << "RMSE for the estimated AoA is: " << computeRMSE(alphaTrue, alpha_estimated) << std::endl;
+    std::cout << "RMSE for the estimated pitch rate is: " << computeRMSE(pitchRateTrue, pitch_rate_estimated) << std::endl;
 }
