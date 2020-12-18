@@ -27,5 +27,5 @@ The expected output from this program looks like this: <br />
 `EKF object has been constructed` <br />
 `Processing dataset...` <br />
 `Finished processing dataset` <br />
-`RMSE for the estimated AoA is: 0.000735383` <br />
-`RMSE for the estimated pitch rate is: 0.000681878` <br />
+`RMSE for the estimated AoA is: 0.00100727` <br />
+`RMSE for the estimated pitch rate is: 0.000842071` <br />

@@ -2,9 +2,11 @@
 
 \usepackage{hyperref}
 \usepackage{amsmath}
+\usepackage{bm}
 \usepackage{amssymb}
 \usepackage{amsfonts}
 \usepackage{amstext}
+\usepackage{graphicx}
 
 \title{\textbf{Extended Kalman Filter for Fixed-Wing Aircraft Dynamics}}
 \author{\textbf{Ahmed M. Hassan}\thanks{am.hassan89@gmail.com}}
@@ -108,10 +110,61 @@ where $\delta_t$ is considered to be from the trim thrust.
 As such, $\delta_t$ is allowed the between $1$ and $-0.56$ \cite{Hassan2016_JAST}.  
 
 \section{Extended Kalman Filter Equations}
+In this section, we will summarize the continous-discrete EKF equations as presented by Crassidis and Junkins \cite{Junkins}.
+The EKF considers a nonlinear system with process and measurment noise as follows
+\begin{equation}
+    \begin{split}
+        \dot{\bm{x}}(t) &= \bm{f}(\bm{x}(t), \bm{u}(t), t) + G(t) \bm{w}(t),~ \bm{w}(t) \sim N(0, Q(t))\\
+        \widetilde{\bm{y}}_k &= \bm{h}(\bm{x}_k) + \bm{v}_k,~ \bm{v}_k \sim N(0, R_k)
+    \end{split}
+\end{equation}
+where the overscript symbol $\widetilde{}$ denotes a measured quantity and the subscript symbol $_k$ denotes the value at time step $k$. 
+Also, $\bm{x}$ is the state vector, $\bm{u}$ is the control input vector, $\bm{w}$ is the process noise vector, and $\bm{v}$ is the measurment noise vector.
+
+The EKF can be initialized as follows
+\begin{equation}
+    \begin{split}
+        \hat{\bm{x}}(t_0) &= \hat{\bm{x}}_0\\
+        P_0 &= E\{\widetilde{\bm{x}}(t_0) \widetilde{\bm{x}}^T(t_0)\}
+    \end{split}
+\end{equation}
+where the overscript symbol $\hat{}$ denotes an estimated quantity and $P$ is the state estimate error covariance matrix.
+
+The Kalman gain, updated state, and updated state estimate error covariance can be obtained as follows
+\begin{equation}
+    \begin{split}
+        K_k &= P_k^- C_k^T \biggl(C_k P_k^- C_k^T + R_k\biggr)^{-1}\\
+        C_k &\equiv \frac{\partial \bm{h}}{\partial \bm{x}}\bigg|_{{\hat{\bm{x}}}_k^-}\\
+        \hat{\bm{x}}_k^+ &= \hat{\bm{x}}_k^- + K_k \biggl(\widetilde{\bm{y}}_k - \bm{h}(\hat{\bm{x}}_k^-)\biggr)\\
+        P_k^+ &= \biggl(I - K_k C_k\biggr) P_k^-
+    \end{split}
+\end{equation}
+where the superscript symbol $^-$ denotes the state/covariance after the propagation step but before the update step. 
+On the other hand, the superscript symbol $^+$ denotes the state/covariance after the update step.
+
+Finally, the state and state estimate error covariance can be propagated as follows
+\begin{equation}
+    \begin{split}
+        \dot{\bm{x}}(t) &= \bm{f}(\bm{x}(t), \bm{u}(t), t)\\
+        \dot{P}(t) &= A(t) P(t) + P(t) A^T(t) + G(t) Q(t) G^T(t)\\
+        A(t) &\equiv \frac{\partial \bm{f}}{\partial \bm{x}}\bigg|_{\hat{\bm{x}}(t), \bm{u}(t)}
+    \end{split}
+\end{equation}
 
 \section{Algorithm Structure}
+Figure \ref{Fig:EKF_Algorithm_Sketch} shows a simple sketch of the algorithm structure. 
+There are two classes implemented in this project: \textit{LongDynamics} and \textit{EKF}. 
+The first one encapsulates the nonlinear dynamic system equations for the fixed-wing aircraft longitudinal dynamics, 
+whereas the second one encapsulates the EKF algorithm implementation. The \textit{LongDynamics} class relies on an external 
+package (odeint \cite{odeint_website}) for time propagation (numerical integration). 
+In addition, there are some helper functions to load the dataset and compute the root mean square error.
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.9\textwidth]{EKF_Algorithm.png}
+    \caption{EKF algorithm structure.}
+    \label{Fig:EKF_Algorithm_Sketch}
+\end{figure}
 
-\section*{References}
-\bibliographystyle{plain}
+\bibliographystyle{unsrt}
 \bibliography{ref}
 \end{document}
