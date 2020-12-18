@@ -4,13 +4,13 @@
 #include <math.h>
 
 // This function loads a dataset of I/O from a text file.
-void loadDataSet(std::string path, Eigen::VectorXd &elevInput, Eigen::VectorXd &throttleInput,
-                 Eigen::VectorXd &alphaTrue, Eigen::VectorXd &alphaMeasured, 
-                 Eigen::VectorXd &pitchRateTrue, Eigen::VectorXd &pitchRateMeasured) 
+void LoadDataSet(std::string path, Eigen::VectorXd &elev_input, Eigen::VectorXd &throttle_input,
+                 Eigen::VectorXd &alpha_true, Eigen::VectorXd &alpha_measured, 
+                 Eigen::VectorXd &pitch_rate_true, Eigen::VectorXd &pitch_rate_measured) 
 {
   std::string line;
   std::string time;
-  double de, dt, aTrue, aMeasured, qTrue, qMeasured;
+  double de, dt, a_true, a_measured, q_true, q_measured;
   std::ifstream filestream(path);
   if (filestream.is_open()) 
   {
@@ -18,19 +18,19 @@ void loadDataSet(std::string path, Eigen::VectorXd &elevInput, Eigen::VectorXd &
     while (std::getline(filestream, line)) 
     {
       std::istringstream linestream(line);
-      while (linestream >> time >> de >> dt >> aTrue >> aMeasured >> qTrue >> qMeasured) {
+      while (linestream >> time >> de >> dt >> a_true >> a_measured >> q_true >> q_measured) {
         if (time == "time") 
         {
           // first line that has the columns titles - do not parse data
         }
         else 
         {
-            elevInput(i) = de;
-            throttleInput(i) = dt;
-            alphaTrue(i) = aTrue;
-            alphaMeasured(i) = aMeasured;
-            pitchRateTrue(i) = qTrue;
-            pitchRateMeasured(i) = qMeasured;
+            elev_input(i) = de;
+            throttle_input(i) = dt;
+            alpha_true(i) = a_true;
+            alpha_measured(i) = a_measured;
+            pitch_rate_true(i) = q_true;
+            pitch_rate_measured(i) = q_measured;
             ++i;
         }
       }
@@ -41,13 +41,13 @@ void loadDataSet(std::string path, Eigen::VectorXd &elevInput, Eigen::VectorXd &
 
 
 // This function computes the root mean square error between the true output and the estimated one.
-float computeRMSE(Eigen::VectorXd &trueOutput, Eigen::VectorXd &estimatedOutput)
+float ComputeRMSE(Eigen::VectorXd &true_output, Eigen::VectorXd &estimated_output)
 {
     float meanSquareError = 0.0;
-    for (int i = 0; i < trueOutput.size(); ++i)
+    for (int i = 0; i < true_output.size(); ++i)
     {
-        double error = trueOutput(i) - estimatedOutput(i);
-        meanSquareError += error * error / trueOutput.size();
+        double error = true_output(i) - estimated_output(i);
+        meanSquareError += error * error / true_output.size();
     }
 return sqrt(meanSquareError);
 }
