@@ -1,5 +1,7 @@
 #include <iostream>
 #include <vector>
+#include <fstream>
+#include <string>
 #include <boost/numeric/odeint.hpp>
 #include "helper_func.h"
 #include "LongDynamics.h"
@@ -10,7 +12,7 @@ int main()
     // Define the dataset path
     const std::string dataset_path{"../data/aircraft_long_dynamics_dataset.txt"};
 
-    // Load data set
+    // Load dataset
     const int dataset_size = 1001;
     Eigen::VectorXd elev_input(dataset_size);
     Eigen::VectorXd throttle_input(dataset_size);
@@ -20,6 +22,14 @@ int main()
     Eigen::VectorXd pitch_rate_measured(dataset_size);
     LoadDataSet(dataset_path, elev_input, throttle_input, alpha_true, 
                 alpha_measured, pitch_rate_true, pitch_rate_measured);
+    
+    // Create a csv file to save output data
+    std::ofstream outputs_file;
+    std::string filename = "outputs.csv";
+    outputs_file.open(filename);
+    outputs_file << "time" << "," << "true_alpha" << "," << "measured_alpha" 
+                << "," << "estimated_alpha" << "," << "true_q" << "," 
+                << "measured_q" << "," << "estimated_q" << std::endl;
     
     // Define dynamic system parameters
     int num_state = 4;
@@ -45,13 +55,6 @@ int main()
     // Construct EKF object
     EKF ekf(Q, R, P0, sample_time);
 
-    // Initial state for the filter
-    Eigen::VectorXd x0(num_state);
-    x0 << 74.9167 + 0.03,
-          3.5330 + 0.03,
-          0.0 +0.001,
-          2.7 * PI / 180;
-
     // Define integration class and a stepper integrator
     state_type x(num_state);
     LongDynamics long_dyn_object;
@@ -68,7 +71,7 @@ int main()
                        0.0 +0.001,
                        2.7 * PI / 180;
 
-    // Run the filter on the data set of I/O
+    // Run the filter on the dataset of I/O
     Eigen::VectorXd y(num_output);
     Eigen::VectorXd u(num_input);
     double t = 0.0;
@@ -83,6 +86,15 @@ int main()
         ekf.Update(y, u, predicted_state);
         alpha_estimated(i) = ekf.GetEstimatedOutput()(0);
         pitch_rate_estimated(i) = ekf.GetEstimatedOutput()(1);
+
+        // Save outputs to the csv file
+        outputs_file << sample_time * i << "," 
+                     << alpha_true(i) * 180.0 / PI << "," 
+                     << alpha_measured(i) * 180.0 / PI << "," 
+                     << alpha_estimated(i) * 180.0 / PI << "," 
+                     << pitch_rate_true(i) * 180.0 / PI << "," 
+                     << pitch_rate_measured(i) * 180.0 / PI << "," 
+                     << pitch_rate_estimated(i) * 180.0 / PI << std::endl;
 
         // Pass the updated state back to the integrator
         x[0] = ekf.GetState()(0);
@@ -99,6 +111,9 @@ int main()
         predicted_state(3) = x[3];       
     }
     std::cout << "Finished processing dataset" << std::endl;
+
+    // Close the output csv file
+    outputs_file.close();
 
     // Compute and print root mean square error for the estimated outputs (angle of attack and pitch rate)
     std::cout << "RMSE for the estimated AoA is: " << ComputeRMSE(alpha_true, alpha_estimated) << std::endl;
